@@ -11,26 +11,41 @@ response = requests.get(BASE_URL)
 response.raise_for_status()
 soup = BeautifulSoup(response.text, "html.parser")
 
-# Find the Spaceflight section
-spaceflight_section = None
-for header in soup.find_all(["h3", "strong"]):
-    if "Spaceflight" in header.get_text():
-        spaceflight_section = header.find_next_sibling("ul")
+spaceflight_items = []
+in_spaceflight = False
+
+for tag in soup.find_all(["h3", "li"]):
+
+    # Detect Spaceflight section start
+    if tag.name == "h3" and "Spaceflight" in tag.get_text():
+        in_spaceflight = True
+        continue
+
+    # Stop when next section begins
+    if tag.name == "h3" and "Sun and Solar System" in tag.get_text():
         break
 
-if not spaceflight_section:
-    raise Exception("Couldn't find the Spaceflight section!")
+    # Collect list items under Spaceflight
+    if in_spaceflight and tag.name == "li":
+        a = tag.find("a")
+        if a:
+            text = a.get_text(strip=True)
+            href = urljoin(BASE_URL, a.get("href"))
+            spaceflight_items.append({
+                "title": text,
+                "url": href
+            })
 
-# Parse all link URLs in the Spaceflight part
-links = []
-for li in spaceflight_section.find_all("li"):
-    a = li.find("a")
-    if a and a.get("href"):
-        href = a["href"]
-        full_url = urljoin(BASE_URL, href)
-        links.append((a.get_text(strip=True), full_url))
+# Print results
+for item in spaceflight_items:
+    print(item["title"])
+    print(item["url"])
+    print("-" * 40)
 
-print(f"Found {len(links)} Spaceflight links.")
+
+links = [(item["title"], item["url"]) for item in spaceflight_items]
+
+
 
 # === Scrape each linked Q&A page ===
 scraped_data = {}
