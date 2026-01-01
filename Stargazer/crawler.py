@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 import time
 
 # === Base URL ===
-BASE_URL = "https://pwg.gsfc.nasa.gov/stargaze/IstarFSubj.htm?utm_source=chatgpt.com"
+BASE_URL = "https://pwg.gsfc.nasa.gov/stargaze"
 
 # === Fetch the Spaceflight index ===
 response = requests.get(BASE_URL)
